@@ -1,4 +1,7 @@
 
+using ECommerceApi.Database;
+using Microsoft.EntityFrameworkCore;
+
 namespace ECommerceApi
 {
     public class Program
@@ -13,6 +16,11 @@ namespace ECommerceApi
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+
+            // Connecting to the database
+            builder.Services.AddDbContext<ECommerceDBContext>(
+                options => options.UseSqlServer(builder.Configuration.GetConnectionString("Database"))
+                );
 
             var app = builder.Build();
 

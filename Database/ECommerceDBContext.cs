@@ -22,6 +22,7 @@ namespace ECommerceApi.Database
             modelBuilder.ApplyConfiguration(new OrderMap());
             modelBuilder.ApplyConfiguration(new UserMap());
             modelBuilder.ApplyConfiguration(new ProductsMap());
+            modelBuilder.ApplyConfiguration(new OrderItemMap());
             base.OnModelCreating(modelBuilder);
         }
     }

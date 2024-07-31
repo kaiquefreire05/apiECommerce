@@ -11,7 +11,7 @@ namespace ECommerceApi.Database.Maps
             builder.HasKey(x => x.Id);
             builder.Property(x => x.Name).IsRequired().HasMaxLength(150);
             builder.Property(x => x.Description).HasMaxLength(200);
-            builder.Property(x => x.Price).IsRequired();
+            builder.Property(x => x.Price).HasColumnType("decimal(18, 2)").IsRequired();
             builder.Property(x => x.Stock).IsRequired();
             builder.Property(x => x.Category).IsRequired();
         }

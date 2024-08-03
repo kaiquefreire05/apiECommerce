@@ -14,7 +14,7 @@ namespace ECommerceApi.Database
         // Representation of tables
         public DbSet<OrderItemModel> OrderItems { get; set; }
         public DbSet<OrderModel> Orders { get; set; }
-        public DbSet<ProductsModel> Products { get; set; }
+        public DbSet<ProductModel> Products { get; set; }
         public DbSet<UsersModel> User { get; set; }
 
         protected override void OnModelCreating (ModelBuilder modelBuilder)

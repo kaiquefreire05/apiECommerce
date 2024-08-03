@@ -17,28 +17,44 @@ namespace ECommerceApi.Repositories
         // Methods
         public async Task<OrderModel> CreateOrder(OrderModel order)
         {
+            if (order == null)
+            {
+                throw new ArgumentNullException(nameof(order), "Order cannot be null.");
+            }
+
             _context.Orders.Add(order);
+            await _context.SaveChangesAsync();
+
+            // Update OrderItems to reference the new Order
+            foreach (var item in order.OrderItems)
+            {
+                item.OrderId = order.Id;
+                _context.OrderItems.Add(item);
+            }
             await _context.SaveChangesAsync();
             return order;
         }
 
         public async Task<bool> DeleteOrder(int id)
         {
-            var findOrder = await GetOrderById(id);
-            if (findOrder == null)
+            var order = await _context.Orders.FindAsync(id);
+            if (order == null)
             {
-                throw new Exception($"The Order with ID: {id} is not founded in the database.");
+                return false; // NotFound
             }
-            _context.Orders.Remove(findOrder);
+
+            // Remove associated order items
+            _context.OrderItems.RemoveRange(_context.OrderItems.Where(oi => oi.OrderId == id));
+            _context.Orders.Remove(order);
             await _context.SaveChangesAsync();
-            return true;
+
+            return true; // Success
         }
 
-        public async Task<List<OrderModel>> GetAllOrder()
+        public async Task<List<OrderModel>> GetAllOrders()
         {
             return await _context.Orders
                 .Include(o => o.OrderItems)
-                .ThenInclude(oi => oi.Products)
                 .ToListAsync();
         }
 
@@ -47,7 +63,6 @@ namespace ECommerceApi.Repositories
             #pragma warning disable CS8603 // Possible null reference return.
             return await _context.Orders
                 .Include(o => o.OrderItems)
-                .ThenInclude(oi => oi.Products)
                 .FirstOrDefaultAsync(o => o.Id == id);
         }
 
@@ -55,28 +70,41 @@ namespace ECommerceApi.Repositories
         {
             return await _context.Orders
                 .Include(o => o.OrderItems)
-                .ThenInclude(oi => oi.Products)
                 .Where(o => o.UserId == userId).ToListAsync();
         }
 
         public async Task<OrderModel> UpdateOrder(OrderModel order, int id)
         {
-            var findOrder = await GetOrderById(id);
-            if (findOrder == null) 
-            { 
-                throw new Exception($"The Order with ID: {id} is not founded in the database.");
+            if (order == null || order.Id != id)
+            {
+                throw new ArgumentException("Order data is invalid.");
             }
-            _context.Entry(findOrder).CurrentValues.SetValues(order);
 
-            // Removing all existing items
-            _context.OrderItems.RemoveRange(order.OrderItems);
+            var existingOrder = await _context.Orders
+                .Include(o => o.OrderItems)
+                .FirstOrDefaultAsync(o => o.Id == id);
+
+            if (existingOrder == null)
+            {
+                return null; // NotFound
+            }
+
+            // Update existing order properties
+            existingOrder.OrderDate = order.OrderDate;
+            existingOrder.UserId = order.UserId;
+
+            // Remove old order items
+            _context.OrderItems.RemoveRange(existingOrder.OrderItems);
+
+            // Add new order items
             foreach (var item in order.OrderItems)
             {
+                item.OrderId = id;
                 _context.OrderItems.Add(item);
             }
-            await _context.SaveChangesAsync();
-            return await GetOrderById(id);
 
+            await _context.SaveChangesAsync();
+            return existingOrder;
         }
     }
 }

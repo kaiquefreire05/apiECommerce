@@ -62,7 +62,13 @@ namespace ECommerceApi.Repositories
             {
                 throw new Exception($"The user with ID: {id} is not founded in the database.");
             }
-            _context.Entry(findUser).CurrentValues.SetValues(user);
+            
+            findUser.UserName = user.UserName;
+            findUser.UserEmail = user.UserEmail;
+            findUser.Password = user.Password;
+            findUser.Role = user.Role;
+
+            _context.User.Update(findUser);
             await _context.SaveChangesAsync();
             return user;
         }

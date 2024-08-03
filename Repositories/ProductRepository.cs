@@ -16,7 +16,7 @@ namespace ECommerceApi.Repositories
         }
 
         // Methods
-        public async Task<ProductsModel> CreateProduct(ProductsModel product)
+        public async Task<ProductModel> CreateProduct(ProductModel product)
         {
             await _context.Products.AddAsync(product);
             await _context.SaveChangesAsync();
@@ -25,7 +25,7 @@ namespace ECommerceApi.Repositories
 
         public async Task<bool> DeleteProduct(int id)
         {
-            ProductsModel productModel = await GetProductById(id);
+            ProductModel productModel = await GetProductById(id);
             if (productModel == null)
             {
                 throw new Exception($"The product with ID: {id} is not founded in database.");
@@ -35,22 +35,22 @@ namespace ECommerceApi.Repositories
             return true;
         }
 
-        public async Task<List<ProductsModel>> GetAllProducts()
+        public async Task<List<ProductModel>> GetAllProducts()
         {
             return await _context.Products.ToListAsync();
         }
 
-        public async Task<ProductsModel> GetProductById(int id)
+        public async Task<ProductModel> GetProductById(int id)
         {
             return await _context.Products.FirstOrDefaultAsync(p => p.Id == id);
         }
 
-        public async Task<List<ProductsModel>> GetProductsByCategorie(CategoriesEnum category)
+        public async Task<List<ProductModel>> GetProductsByCategory(CategoriesEnum category)
         {
             return await _context.Products.Where(p => p.Category == category).ToListAsync();
         }
 
-        public async Task<ProductsModel> UpdateProduct(int prodId, ProductsModel product)
+        public async Task<ProductModel> UpdateProduct(int prodId, ProductModel product)
         {
             var productFind = await GetProductById(prodId);
             if (productFind == null)

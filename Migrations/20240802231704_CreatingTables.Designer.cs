@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ECommerceApi.Migrations
 {
     [DbContext(typeof(ECommerceDBContext))]
-    [Migration("20240730231822_CreatingAllTables")]
-    partial class CreatingAllTables
+    [Migration("20240802231704_CreatingTables")]
+    partial class CreatingTables
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -116,6 +116,9 @@ namespace ECommerceApi.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<int>("Role")
+                        .HasColumnType("int");
+
                     b.Property<string>("UserEmail")
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
@@ -141,7 +144,7 @@ namespace ECommerceApi.Migrations
                     b.HasOne("ECommerceApi.Models.ProductsModel", "Products")
                         .WithMany("OrderItems")
                         .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Order");
@@ -152,9 +155,9 @@ namespace ECommerceApi.Migrations
             modelBuilder.Entity("ECommerceApi.Models.OrderModel", b =>
                 {
                     b.HasOne("ECommerceApi.Models.UsersModel", "User")
-                        .WithMany("Orders")
+                        .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("User");
@@ -168,11 +171,6 @@ namespace ECommerceApi.Migrations
             modelBuilder.Entity("ECommerceApi.Models.ProductsModel", b =>
                 {
                     b.Navigation("OrderItems");
-                });
-
-            modelBuilder.Entity("ECommerceApi.Models.UsersModel", b =>
-                {
-                    b.Navigation("Orders");
                 });
 #pragma warning restore 612, 618
         }

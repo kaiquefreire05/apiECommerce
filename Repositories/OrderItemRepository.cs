@@ -36,17 +36,13 @@ namespace ECommerceApi.Repositories
 
         public async Task<List<OrderItemModel>> GetAllOrderItem()
         {
-            return await _context.OrderItems
-                .Include(oi => oi.Order).Include(oi => oi.Products).ToListAsync();
+            return await _context.OrderItems.ToListAsync();
         }
 
         public async Task<OrderItemModel> GetOrderItemById(int id)
         {
             #pragma warning disable CS8603 // Possible null reference return.
-            return await _context.OrderItems
-                .Include(oi => oi.Order)
-                .Include(oi => oi.Products)
-                .FirstOrDefaultAsync(oi => oi.Id == id);
+            return await _context.OrderItems.FirstOrDefaultAsync(oi => oi.Id == id);
         }
 
         public async Task<OrderItemModel> UpdateOrderItem(OrderItemModel item, int id)
@@ -56,7 +52,10 @@ namespace ECommerceApi.Repositories
             {
                 throw new Exception($"The Order Item with ID: {id} is not founded in the database");
             }
-            _context.Entry(itemFind).CurrentValues.SetValues(item);
+            itemFind.Quantity = item.Quantity;
+            itemFind.OrderId = item.OrderId;
+            itemFind.ProductId = item.ProductId;
+
             await _context.SaveChangesAsync();
             return item;
         }

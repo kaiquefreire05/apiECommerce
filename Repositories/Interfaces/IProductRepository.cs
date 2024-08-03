@@ -5,11 +5,11 @@ namespace ECommerceApi.Repositories.Interfaces
 {
     public interface IProductRepository
     {
-        Task<ProductsModel> CreateProduct(ProductsModel product);
-        Task<List<ProductsModel>> GetAllProducts();
-        Task<ProductsModel> GetProductById(int id);
-        Task<List<ProductsModel>> GetProductsByCategorie(CategoriesEnum category);
-        Task<ProductsModel> UpdateProduct(int prodId, ProductsModel product);
+        Task<ProductModel> CreateProduct(ProductModel product);
+        Task<List<ProductModel>> GetAllProducts();
+        Task<ProductModel> GetProductById(int id);
+        Task<List<ProductModel>> GetProductsByCategory(CategoriesEnum category);
+        Task<ProductModel> UpdateProduct(int prodId, ProductModel product);
         Task<bool> DeleteProduct(int id);
     }
 }

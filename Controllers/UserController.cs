@@ -1,4 +1,6 @@
-﻿using ECommerceApi.Enums;
+﻿using AutoMapper;
+using ECommerceApi.DTOs;
+using ECommerceApi.Enums;
 using ECommerceApi.Models;
 using ECommerceApi.Repositories.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -9,69 +11,74 @@ namespace ECommerceApi.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-        // Injecting database methods
+        // Injecting database methods and mapping
         private readonly IUserRepository _rep;
-        public UserController(IUserRepository rep)
+        private readonly IMapper _map;
+        public UserController(IUserRepository rep, IMapper map)
         {
             _rep = rep;
+            _map = map;
         }
 
         // API Methods
         [HttpPost]
-        public async Task<ActionResult<UsersModel>> CreateUser([FromBody] UsersModel user)
+        public async Task<ActionResult<UserDTO>> CreateUser([FromBody] UserDTO userDto)
         {
-            await _rep.CreateUser(user);
-            return CreatedAtAction(nameof(GetUserById), new { id = user.Id }, user);
+            var createdUser = await _rep.CreateUser(_map.Map<UserModel>(userDto));
+            var createdUserDto = _map.Map<UserDTO>(createdUser);
+            return CreatedAtAction(nameof(GetUserById), new { id = createdUserDto.Id }, createdUserDto);
         }
 
         [HttpDelete("{id}")]
-        public async Task<ActionResult<UsersModel>> DeleteUser(int id)
+        public async Task<ActionResult<UserModel>> DeleteUser(int id)
         {
             var deleted = await _rep.DeleteUser(id);
             return Ok(deleted);
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<UsersModel>>> GetAllUser()
+        public async Task<ActionResult<List<UserDTO>>> GetAllUser()
         {
-            return Ok(await _rep.GetAllUser());
+            var users = await _rep.GetAllUser();
+            return Ok(_map.Map<List<UserDTO>>(users));
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<UsersModel>> GetUserById(int id)
+        public async Task<ActionResult<UserDTO>> GetUserById(int id)
         {
             var findUser = await _rep.GetUserById(id);
             if (findUser == null)
             {
                 return NotFound();
             }
-            return Ok(findUser);
+            return Ok(_map.Map<UserDTO>(findUser));
         }
 
         [HttpGet("username/{username}")]
-        public async Task<ActionResult<UsersModel>> GetUserByNickname(string username)
+        public async Task<ActionResult<UserModel>> GetUserByNickname(string username)
         {
             var findUser = await _rep.GetUserByNickname(username);
             if (findUser == null)
             {
                 return NotFound();
             }
-            return Ok(findUser);
+            return Ok(_map.Map<UserDTO>(findUser));
         }
 
         [HttpGet("role/{role}")]
-        public async Task<ActionResult<List<UsersModel>>> GetUsersByRole(UserRole role)
+        public async Task<ActionResult<List<UserModel>>> GetUsersByRole(UserRole role)
         {
-            return Ok(await _rep.GetUserByRole(role));
+            var users = await _rep.GetUserByRole(role);
+            return Ok(_map.Map<List<UserDTO>>(users));
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<UsersModel>> UpdateUser([FromBody] UsersModel user, int id)
+        public async Task<ActionResult<UserModel>> UpdateUser([FromBody] UserModel user, int id)
         {
             try
             {
                 var updatedUser = await _rep.UpdateUser(user, id);
-                return Ok(updatedUser);
+                return Ok(_map.Map<UserDTO>(updatedUser));
             }
             catch (Exception ex)
             {

@@ -1,5 +1,7 @@
-﻿using ECommerceApi.Database;
+﻿using AutoMapper;
+using ECommerceApi.Database;
 using ECommerceApi.DTOs;
+using ECommerceApi.Mapping;
 using ECommerceApi.Models;
 using ECommerceApi.Repositories;
 using ECommerceApi.Repositories.Interfaces;
@@ -14,13 +16,16 @@ namespace ECommerceApi.Controllers
     [Route("api/[controller]")]
     public class OrderController : ControllerBase
     {
+        // Injecting database methods and mapping
         private readonly IOrdersRepository _rep;
-
-        public OrderController(IOrdersRepository rep)
+        private readonly IMapper _map;
+        public OrderController(IOrdersRepository rep, IMapper map)
         {
             _rep = rep;
+            _map = map;
         }
 
+        // Methods
         [HttpGet]
         public async Task<ActionResult<List<OrderDTO>>> GetOrders()
         {
@@ -31,27 +36,14 @@ namespace ECommerceApi.Controllers
             }
 
             // Mapping orders to DTO
-            var ordersDto = orders.Select(order => new OrderDTO
-            {
-                Id = order.Id,
-                OrderDate = order.OrderDate,
-                UserId = order.UserId,
-                // Mapping items to DTO
-                OrdersItemDTO = order.OrderItems.Select(oi => new OrderItemDTO
-                {
-                    Id = oi.Id,
-                    Quantity = oi.Quantity,
-                    OrderId = oi.OrderId,
-                    ProductId = oi.ProductId
-                }).ToList()
-            }).ToList();
+            var ordersDto = _map.Map<List<OrderDTO>>(orders);
 
             return Ok(ordersDto);
         }
 
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<OrderModel>> GetOrder(int id)
+        public async Task<ActionResult<OrderDTO>> GetOrder(int id)
         {
             var order = await _rep.GetOrderById(id);
             if (order == null)
@@ -59,94 +51,53 @@ namespace ECommerceApi.Controllers
                 return NotFound();
             }
             // Mapping order to DTO
-            var orderDto = new OrderDTO
-            {
-                Id = order.Id,
-                OrderDate = order.OrderDate,
-                UserId = order.UserId,
-
-                // Mapping items to DTO
-                OrdersItemDTO = order.OrderItems.Select(oi => new OrderItemDTO
-                {
-                    Id = oi.Id,
-                    Quantity = oi.Quantity,
-                    OrderId = oi.OrderId,
-                    ProductId = oi.ProductId
-                }).ToList()
-            };
-
+            var orderDto = _map.Map<OrderDTO>(order);
             return Ok(orderDto);
         }
 
         [HttpPost]
-        public async Task<ActionResult<OrderModel>> CreateOrder([FromBody] OrderModel order)
+        public async Task<ActionResult<OrderDTO>> CreateOrder([FromBody] OrderDTO orderDto)
         {
-            if (order == null)
+            if (orderDto == null)
             {
                 return BadRequest("Order cannot be null.");
             }
+
+            // Mapping DTO to OrderModel
+            var order = _map.Map<OrderModel>(orderDto);
             var createdOrder = await _rep.CreateOrder(order);
+
             // Mapping createdOrder to DTO
-            var orderDto = new OrderDTO
-            {
-                Id = createdOrder.Id,
-                OrderDate = createdOrder.OrderDate,
-                UserId = createdOrder.UserId,
+            var createdOrderDto = _map.Map<OrderDTO>(createdOrder);
 
-                // Mapping items to DTO
-                OrdersItemDTO = createdOrder.OrderItems.Select(oi => new OrderItemDTO
-                {
-                    Id = oi.Id,
-                    Quantity = oi.Quantity,
-                    OrderId = oi.OrderId,
-                    ProductId = oi.ProductId,
-                }).ToList()
-            };
-
-            return CreatedAtAction(nameof(GetOrder), new { id = orderDto.Id }, orderDto);
+            return CreatedAtAction(nameof(GetOrder), new { id = createdOrderDto.Id }, createdOrderDto);
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<OrderModel>> UpdateOrder(int id, [FromBody] OrderModel order)
+        public async Task<ActionResult<OrderDTO>> UpdateOrder(int id, [FromBody] OrderDTO orderDto)
         {
-            if (order == null || order.Id != id)
+            if (orderDto == null || orderDto.Id != id)
             {
                 return BadRequest("Order data is invalid.");
             }
 
+            var order = _map.Map<OrderModel>(orderDto);
             var updatedOrder = await _rep.UpdateOrder(order, id);
-            if (updatedOrder == null)
+            if (order == null)
             {
                 return NotFound();
             }
-            // Mapping updatedOrder to DTO
-            var orderDto = new OrderDTO
-            {
-                Id = updatedOrder.Id,
-                OrderDate = updatedOrder.OrderDate,
-                UserId = updatedOrder.UserId,
 
-                // Mapping itens to DTO
-                OrdersItemDTO = updatedOrder.OrderItems.Select(oi => new OrderItemDTO
-                { 
-                    Id = oi.Id,
-                    Quantity = oi.Quantity,
-                    OrderId = oi.OrderId,
-                    ProductId = oi.ProductId,
-                }).ToList()
-            };
-            return Ok(orderDto);
+            var updatedOrderDto = _map.Map<OrderDTO>(updatedOrder);
+            return Ok(updatedOrderDto);
+
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteOrder(int id)
         {
-            var result = await _rep.DeleteOrder(id);
-            if (!result)
-            {
-                return NotFound();
-            }
-            return NoContent();
+            var deleted = await _rep.DeleteOrder(id);
+            return Ok(deleted);
         }
     }
 }

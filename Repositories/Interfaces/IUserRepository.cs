@@ -5,12 +5,12 @@ namespace ECommerceApi.Repositories.Interfaces
 {
     public interface IUserRepository
     {
-        Task<UsersModel> CreateUser(UsersModel user);
-        Task<List<UsersModel>> GetAllUser();
-        Task<UsersModel> GetUserById(int id);
-        Task<List<UsersModel>> GetUserByRole(UserRole role);
-        Task<UsersModel> GetUserByNickname(string username);
-        Task<UsersModel> UpdateUser(UsersModel user, int id);
+        Task<UserModel> CreateUser(UserModel user);
+        Task<List<UserModel>> GetAllUser();
+        Task<UserModel> GetUserById(int id);
+        Task<List<UserModel>> GetUserByRole(UserRole role);
+        Task<UserModel> GetUserByNickname(string username);
+        Task<UserModel> UpdateUser(UserModel user, int id);
         Task<bool> DeleteUser(int id);
     }
 }

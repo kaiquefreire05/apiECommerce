@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace ECommerceApi.Database.Maps
 {
-    public class UserMap : IEntityTypeConfiguration<UsersModel>
+    public class UserMap : IEntityTypeConfiguration<UserModel>
     {
-        public void Configure(EntityTypeBuilder<UsersModel> builder)
+        public void Configure(EntityTypeBuilder<UserModel> builder)
         {
             builder.HasKey(x => x.Id);
 

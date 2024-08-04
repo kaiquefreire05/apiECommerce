@@ -1,5 +1,6 @@
 
 using ECommerceApi.Database;
+using ECommerceApi.Mapping;
 using ECommerceApi.Repositories;
 using ECommerceApi.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -28,6 +29,13 @@ namespace ECommerceApi
             builder.Services.AddDbContext<ECommerceDBContext>(
                 options => options.UseSqlServer(builder.Configuration.GetConnectionString("Database"))
                 );
+
+            // AutoMap dependency
+            builder.Services.AddAutoMapper(typeof(MappingProfile).Assembly);
+
+            // Configure logging
+            builder.Logging.ClearProviders(); // Clean existent logs providers
+            builder.Logging.AddConsole(); // Add log how provider
 
             // Configure dependencies injection
             builder.Services.AddScoped<IOrdersRepository, OrderRepository>();

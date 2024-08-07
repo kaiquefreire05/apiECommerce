@@ -2,10 +2,12 @@
 using ECommerceApi.DTOs;
 using ECommerceApi.Models;
 using ECommerceApi.Repositories.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ECommerceApi.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class OrderItemController : ControllerBase

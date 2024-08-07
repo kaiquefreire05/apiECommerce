@@ -20,25 +20,32 @@ namespace ECommerceApi.Repositories
         // Methods
         public async Task<OrderModel> CreateOrder(OrderModel order)
         {
+            // Verifyng if order is null
             if (order == null)
             {
                 _logger.LogError("Attempted to create a null order.");
                 throw new ArgumentNullException(nameof(order), "Order cannot be null.");
             }
+            // Verifyng if order items is null
             if (order.OrderItems == null || !order.OrderItems.Any())
             {
                 _logger.LogWarning($"Order with ID: {order.Id} has no items.");
                 throw new ArgumentException("Order must contain at least one item.", nameof(order));
             }
-            _logger.LogInformation($"Attempting to create order with ID: {order.Id}.");
+            // Verifyng if users exists
+            var userExists = await _context.Users.AnyAsync(u => u.Id == order.UserId);
+            if (!userExists)
+            {
+                _logger.LogError($"User with ID {order.UserId} does not exist");
+                throw new ArgumentException($"User with ID {order.UserId} does not exist");
+            }
 
-            // Check if all products exist and have sufficient stock
-            var productIds = order.OrderItems.Select(i => i.ProductId).Distinct();
-            var products = await _context.Products
+            var productIds = order.OrderItems.Select(i => i.ProductId).Distinct(); // Getting all products ID
+            var products = await _context.Products // Getting all products
                 .Where(p => productIds.Contains(p.Id))
                 .ToListAsync();
 
-            var productMap = products.ToDictionary(p => p.Id);
+            var productMap = products.ToDictionary(p => p.Id); // Transform in dict
 
             var missingProductIds = productIds.Except(productMap.Keys).ToList();
             if (missingProductIds.Any())
@@ -47,36 +54,45 @@ namespace ECommerceApi.Repositories
                 throw new ArgumentException("One or more products referenced in OrderItems do not exist.");
             }
 
-            foreach (var item in order.OrderItems)
-            {
-                if (!productMap.TryGetValue(item.ProductId, out var product))
-                {
-                    _logger.LogError($"Product with ID: {item.ProductId} does not exist.");
-                    throw new ArgumentException($"Product with ID: {item.ProductId} does not exist.");
-                }
-
-                if (product.Stock < item.Quantity)
-                {
-                    _logger.LogError($"Insufficient stock for Product ID: {item.ProductId}. Available: {product.Stock}, Requested: {item.Quantity}.");
-                    throw new InvalidOperationException($"Insufficient stock for Product ID: {item.ProductId}.");
-                }
-
-                // Update product stock
-                product.Stock -= item.Quantity;
-                _context.Products.Update(product);
-
-                item.OrderId = order.Id;
-                _context.OrderItems.Add(item);
-            }
+            using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
+                foreach (var item in order.OrderItems)
+                {
+                    // Verify if products exists
+                    if (!productMap.TryGetValue(item.ProductId, out var product))
+                    {
+                        _logger.LogError($"Product with ID: {item.ProductId} does not exist.");
+                        throw new ArgumentException($"Product with ID: {item.ProductId} does not exist.");
+                    }
+                    // Verifyng product stock
+                    if (product.Stock < item.Quantity)
+                    {
+                        _logger.LogError($"Insufficient stock for Product ID: {item.ProductId}. Available: {product.Stock}, Requested: {item.Quantity}.");
+                        throw new InvalidOperationException($"Insufficient stock for Product ID: {item.ProductId}.");
+                    }
+
+                    // Update product stock
+                    product.Stock -= item.Quantity;
+                    _context.Products.Update(product);
+
+                    // Set order ID in order item
+                    item.OrderId = order.Id;
+                    _context.OrderItems.Add(item);  // Add orderitem in context
+                }
+
+                // Add order in databse
                 _context.Orders.Add(order);
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync();  // Save changes
+
+                await transaction.CommitAsync();  // Confirm transaction
                 return order;
             }
             catch (DbUpdateException ex) when (ex.InnerException is SqlException sqlEx)
             {
                 _logger.LogError(ex, "Database update exception while creating order.");
+                await transaction.RollbackAsync();  // Rollback transaction in case error
+
                 if (sqlEx.Number == 547)
                 {
                     throw new ArgumentException("Database constraint violation.");
@@ -86,11 +102,10 @@ namespace ECommerceApi.Repositories
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Exception occurred while creating order.");
+                await transaction.RollbackAsync();  // Rollback transaction in case error
                 throw new InvalidOperationException("An error occurred while creating the order.", ex);
             }
         }
-
-
 
         public async Task<bool> DeleteOrder(int id)
         {

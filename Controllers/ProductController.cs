@@ -3,6 +3,7 @@ using ECommerceApi.DTOs;
 using ECommerceApi.Enums;
 using ECommerceApi.Models;
 using ECommerceApi.Repositories.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -22,6 +23,7 @@ namespace ECommerceApi.Controllers
         }
 
         // API Methods
+        [Authorize]
         [HttpPost]
         public async Task<ActionResult<ProductDTO>> CreateProduct([FromBody] ProductDTO productDto)
         {
@@ -35,6 +37,7 @@ namespace ECommerceApi.Controllers
             return CreatedAtAction(nameof(GetProductById), new {id = createdProductDto.Id}, createdProductDto);
         }
 
+        [Authorize]
         [HttpDelete("{id}")]
         public async Task<ActionResult<ProductDTO>> DeleteProduct(int id)
         {
@@ -60,6 +63,7 @@ namespace ECommerceApi.Controllers
             return Ok(_map.Map<ProductDTO>(findProduct)); 
         }
 
+        [Authorize]
         [HttpGet("categories/{category}")]
         public async Task<ActionResult<List<ProductDTO>>> GetProductByCategory(CategoriesEnum category)
         {
@@ -67,6 +71,7 @@ namespace ECommerceApi.Controllers
             return Ok(_map.Map<List<ProductDTO>>(products));
         }
 
+        [Authorize]
         [HttpPut("{id}")]
         public async Task<ActionResult<ProductDTO>> UpdateProduct([FromBody] ProductDTO productDto, int id)
         {

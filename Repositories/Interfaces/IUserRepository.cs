@@ -12,5 +12,6 @@ namespace ECommerceApi.Repositories.Interfaces
         Task<UserModel> GetUserByNickname(string username);
         Task<UserModel> UpdateUser(UserModel user, int id);
         Task<bool> DeleteUser(int id);
+        Task<UserModel> GetUserByUsernameAndPassword(string username, string password);
     }
 }

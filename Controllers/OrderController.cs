@@ -5,6 +5,7 @@ using ECommerceApi.Mapping;
 using ECommerceApi.Models;
 using ECommerceApi.Repositories;
 using ECommerceApi.Repositories.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
@@ -12,6 +13,7 @@ using System.Threading.Tasks;
 
 namespace ECommerceApi.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class OrderController : ControllerBase
@@ -43,7 +45,7 @@ namespace ECommerceApi.Controllers
 
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<OrderDTO>> GetOrder(int id)
+        public async Task<ActionResult<OrderDTO>> GetOrderById(int id)
         {
             var order = await _rep.GetOrderById(id);
             if (order == null)
@@ -70,7 +72,7 @@ namespace ECommerceApi.Controllers
             // Mapping createdOrder to DTO
             var createdOrderDto = _map.Map<OrderDTO>(createdOrder);
 
-            return CreatedAtAction(nameof(GetOrder), new { id = createdOrderDto.Id }, createdOrderDto);
+            return CreatedAtAction(nameof(GetOrderById), new { id = createdOrderDto.Id }, createdOrderDto);
         }
 
         [HttpPut("{id}")]

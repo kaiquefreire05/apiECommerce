@@ -72,5 +72,10 @@ namespace ECommerceApi.Repositories
             await _context.SaveChangesAsync();
             return user;
         }
+
+        public async Task<UserModel> GetUserByUsernameAndPassword(string username, string password)
+        {
+            return await _context.Users.SingleOrDefaultAsync(user => user.UserName == username && user.Password == password);
+        }
     }
 }

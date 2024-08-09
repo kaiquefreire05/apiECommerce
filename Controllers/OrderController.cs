@@ -1,15 +1,9 @@
 ﻿using AutoMapper;
-using ECommerceApi.Database;
 using ECommerceApi.DTOs;
-using ECommerceApi.Mapping;
 using ECommerceApi.Models;
-using ECommerceApi.Repositories;
 using ECommerceApi.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace ECommerceApi.Controllers
 {
@@ -27,7 +21,12 @@ namespace ECommerceApi.Controllers
             _map = map;
         }
 
-        // Methods
+        /// <summary>
+        /// Retrieves all orders.
+        /// </summary>
+        /// <returns>Returns a list of all orders.</returns>
+        /// <response code="200">Returns the list of orders</response>
+        /// <response code="404">If no orders are found</response>
         [HttpGet]
         public async Task<ActionResult<List<OrderDTO>>> GetOrders()
         {
@@ -43,7 +42,13 @@ namespace ECommerceApi.Controllers
             return Ok(ordersDto);
         }
 
-
+        /// <summary>
+        /// Retrieves a specific order by ID.
+        /// </summary>
+        /// <param name="id">The order ID.</param>
+        /// <returns>Returns the order details.</returns>
+        /// <response code="200">Returns the order details</response>
+        /// <response code="404">If the order is not found</response>
         [HttpGet("{id}")]
         public async Task<ActionResult<OrderDTO>> GetOrderById(int id)
         {
@@ -57,6 +62,13 @@ namespace ECommerceApi.Controllers
             return Ok(orderDto);
         }
 
+        /// <summary>
+        /// Creates a new order.
+        /// </summary>
+        /// <param name="orderDto">The order data transfer object containing order details.</param>
+        /// <returns>Returns the created order details.</returns>
+        /// <response code="201">Returns the newly created order</response>
+        /// <response code="400">If the order is null</response>
         [HttpPost]
         public async Task<ActionResult<OrderDTO>> CreateOrder([FromBody] OrderDTO orderDto)
         {
@@ -75,6 +87,15 @@ namespace ECommerceApi.Controllers
             return CreatedAtAction(nameof(GetOrderById), new { id = createdOrderDto.Id }, createdOrderDto);
         }
 
+        /// <summary>
+        /// Updates an existing order.
+        /// </summary>
+        /// <param name="id">The order ID.</param>
+        /// <param name="orderDto">The order data transfer object containing updated order details.</param>
+        /// <returns>Returns the updated order details.</returns>
+        /// <response code="200">If the order was successfully updated</response>
+        /// <response code="400">If the order data is invalid</response>
+        /// <response code="404">If the order is not found</response>
         [HttpPut("{id}")]
         public async Task<ActionResult<OrderDTO>> UpdateOrder(int id, [FromBody] OrderDTO orderDto)
         {
@@ -92,9 +113,15 @@ namespace ECommerceApi.Controllers
 
             var updatedOrderDto = _map.Map<OrderDTO>(updatedOrder);
             return Ok(updatedOrderDto);
-
         }
 
+        /// <summary>
+        /// Deletes an order by ID.
+        /// </summary>
+        /// <param name="id">The order ID.</param>
+        /// <returns>Returns the status of the deletion.</returns>
+        /// <response code="200">If the order was successfully deleted</response>
+        /// <response code="404">If the order is not found</response>
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteOrder(int id)
         {

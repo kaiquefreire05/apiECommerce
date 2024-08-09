@@ -132,7 +132,7 @@ namespace ECommerceApi.Repositories
 
         public async Task<OrderModel> GetOrderById(int id)
         {
-            #pragma warning disable CS8603 // Possible null reference return.
+#pragma warning disable CS8603 // Possible null reference return.
             return await _context.Orders
                 .Include(o => o.OrderItems)
                 .FirstOrDefaultAsync(o => o.Id == id);

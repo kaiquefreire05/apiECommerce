@@ -26,8 +26,20 @@ namespace ECommerceApi
                 c.SwaggerDoc("v1", new OpenApiInfo
                 {
                     Title = "ECommerce - API", // Title API
-                    Version = "v1" // API Version
+                    Version = "v1", // API Version
+                    Description = "API for ECommerce application",
+                    Contact = new OpenApiContact
+                    {
+                        Name = "Kaíque Freire dos Santos",
+                        Email = "kaiquefreiresantos05@gmail.com",
+                        Url = new Uri("https://github.com/kaiquefreire05")
+                    }
                 });
+
+                // Adding XML comments in Swagger
+                var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                c.IncludeXmlComments(xmlPath);
 
                 // Setting security schema for JWT autentication
                 var securitySchema = new OpenApiSecurityScheme
@@ -88,8 +100,8 @@ namespace ECommerceApi
 
             builder.Services.AddAuthentication(o =>
             {
-            o.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-            o.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                o.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                o.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             }).AddJwtBearer(o =>
             {
                 o.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters()
@@ -111,7 +123,11 @@ namespace ECommerceApi
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
-                app.UseSwaggerUI();
+                app.UseSwaggerUI(options =>
+                {
+                    options.SwaggerEndpoint("/swagger/v1/swagger.json", "ECommerce API v1");
+                    //options.RoutePrefix = string.Empty; // Serve Swagger UI at application root
+                });
             }
 
             app.UseHttpsRedirection();
@@ -119,7 +135,6 @@ namespace ECommerceApi
             // Adding authentication
             app.UseAuthentication();
             app.UseAuthorization();
-
 
             app.MapControllers();
 

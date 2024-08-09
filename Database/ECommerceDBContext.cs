@@ -6,7 +6,7 @@ namespace ECommerceApi.Database
 {
     public class ECommerceDBContext : DbContext
     {
-        public ECommerceDBContext(DbContextOptions options): base(options)
+        public ECommerceDBContext(DbContextOptions options) : base(options)
         {
 
         }
@@ -17,7 +17,7 @@ namespace ECommerceApi.Database
         public DbSet<ProductModel> Products { get; set; }
         public DbSet<UserModel> Users { get; set; }
 
-        protected override void OnModelCreating (ModelBuilder modelBuilder)
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfiguration(new OrderMap());
             modelBuilder.ApplyConfiguration(new UserMap());

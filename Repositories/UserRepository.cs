@@ -12,7 +12,7 @@ namespace ECommerceApi.Repositories
         private readonly ECommerceDBContext _context;
         public UserRepository(ECommerceDBContext context)
         {
-            _context = context; 
+            _context = context;
         }
 
         // Methods
@@ -62,7 +62,7 @@ namespace ECommerceApi.Repositories
             {
                 throw new Exception($"The user with ID: {id} is not founded in the database.");
             }
-            
+
             findUser.UserName = user.UserName;
             findUser.UserEmail = user.UserEmail;
             findUser.Password = user.Password;

@@ -1,6 +1,4 @@
-﻿using ECommerceApi.DTOs;
-using ECommerceApi.Repositories.Interfaces;
-using Microsoft.AspNetCore.Http;
+﻿using ECommerceApi.Repositories.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -17,11 +15,22 @@ namespace ECommerceApi.Controllers
         private readonly IConfiguration _config;
         public AuthorizationController(IUserRepository rep, IConfiguration config)
         {
-            _rep = rep; 
+            _rep = rep;
             _config = config;
         }
 
         // Methods 
+
+        /// <summary>
+        /// Authenticates a user and generates a JWT token if credentials are valid.
+        /// </summary>
+        /// <param name="username">The username of the user attempting to log in.</param>
+        /// <param name="password">The password of the user attempting to log in.</param>
+        /// <returns>Returns a JWT token if authentication is successful.</returns>
+        /// <response code="200">Returns the JWT token</response>
+        /// <response code="400">If the username or password is not provided</response>
+        /// <response code="401">If the username or password is incorrect</response>
+        /// <response code="403">If the user is not authorized</response>
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromQuery] string username, [FromQuery] string password)
         {
@@ -44,6 +53,10 @@ namespace ECommerceApi.Controllers
             return Ok(new { token = tk });
         }
 
+        /// <summary>
+        /// Generates a JWT token based on predefined settings.
+        /// </summary>
+        /// <returns>Returns a JWT token as a string.</returns>
         private string GenerateTokenJWT()
         {
             var jwtSettings = _config.GetSection("jwt");
@@ -73,11 +86,16 @@ namespace ECommerceApi.Controllers
             return new JwtSecurityTokenHandler().WriteToken(tk);
         }
 
+        /// <summary>
+        /// Retrieves the expiration time for the JWT token from the configuration.
+        /// </summary>
+        /// <returns>Returns the expiration time in hours as an integer.</returns>
+        /// <exception cref="InvalidOperationException">Thrown when the expire time configuration is invalid.</exception>
         private int GetExpireTime()
         {
-            // Getting value how string
+            // Getting value as string
             var jwtSettings = _config.GetSection("jwt");
-            var expireTimeString = _config["expiretime"];
+            var expireTimeString = jwtSettings["expiretime"];
 
             // Try parse to int
             if (int.TryParse(expireTimeString, out int expireTime))
@@ -87,6 +105,5 @@ namespace ECommerceApi.Controllers
             // Exception
             throw new InvalidOperationException("Invalid expire time configuration.");
         }
-
     }
 }
